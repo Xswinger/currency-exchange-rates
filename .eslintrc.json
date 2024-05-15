@@ -3,6 +3,7 @@
   "ignorePatterns": [
     "projects/**/*"
   ],
+  "plugins": ["@html-eslint"],
   "overrides": [
     {
       "files": [
@@ -30,6 +31,43 @@
             "prefix": "app",
             "style": "kebab-case"
           }
+        ],
+        "for-direction": [
+          "error"
+        ],
+        "no-cond-assign": [
+          "error"
+        ],
+        "no-constant-condition": [
+          "error"
+        ],
+        "no-fallthrough": [
+          "error"
+        ],
+        "no-unused-vars": [
+          "error", {
+            "vars": "all",
+            "args": "all"
+          }
+        ],
+        "max-lines": [
+          "warn",
+          {
+            "max": 300, "skipBlankLines": true
+          }
+        ],
+        "max-len": [
+          "warn", 
+          { 
+            "code": 140
+          }
+        ],
+        "@typescript-eslint/no-explicit-any": [
+          "error",
+          {
+            "fixToUnknown": true,
+            "ignoreRestArgs": true
+          }
         ]
       }
     },
@@ -37,11 +75,18 @@
       "files": [
         "*.html"
       ],
+      "parser": "@html-eslint/parser",
       "extends": [
-        "plugin:@angular-eslint/template/recommended",
-        "plugin:@angular-eslint/template/accessibility"
+        "plugin:@html-eslint/recommended"
       ],
-      "rules": {}
+      "rules": {
+        "@html-eslint/require-closing-tags": "warn",
+        "@html-eslint/indent": [
+          "warn", 2
+        ],
+        "@html-eslint/no-extra-spacing-attrs": "warn",
+        "@html-eslint/element-newline": "warn"
+      }
     }
   ]
 }
