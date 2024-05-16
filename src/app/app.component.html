@@ -1,26 +1,31 @@
 <div class="toolbar">
   <div class="header">
-    <h2>Currency RUB</h2>
-    <h5>01.09.2022, 00:24:05</h5>
+    <h2 class="title">Currency RUB</h2>
+    <h5 class="subtitle">{{ getFormatDate() }}</h5>
   </div>
   <div>
-    <button type="button">+</button>
+    <!-- !Temp if, replace on currentCurrencies -->
+    <button class="button" title="Добавить валюту" (click)="addCurrency()" [disabled]="this.rates.length >= 6">
+      <span class="icon is-small">
+        <i class="fas fa-plus"></i>
+      </span>
+    </button>
+    <!-- !Temp if, replace on currentCurrencies -->
+    <button class="button" title="Убрать валюту" (click)="removeCurrency()" [disabled]="this.rates.length <= 3">
+      <span class="icon is-small">
+        <i class="fas fa-minus"></i>
+      </span>
+    </button>
   </div>
 </div>
-<div class="content">
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
-  <app-currency-rate></app-currency-rate>
+<div *ngIf="loadStatus; else cont" class="progress-wrapper">
+  <h4 class="title is-4">{{loadMessage}}</h4>
+  <progress class="progress is-large is-info" max="100">60%</progress>
 </div>
+<ng-template #cont>
+  <div class="content">
+    <ng-template ngFor let-rate [ngForOf]="rates">
+      <app-currency-rate [currencyName]="rate.getName" [currencyRate]="rate.getRate"></app-currency-rate>
+    </ng-template>
+  </div>
+</ng-template>
