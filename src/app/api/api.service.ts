@@ -7,7 +7,7 @@ import { Currency } from "../entities/currency";
 @Injectable( {providedIn: 'root'} )
 export class ApiService {
     
-    private readonly baseUrl: string = 'https://api.apilayer.com/currency_data/live?';
+    private readonly baseUrl: string = 'https://api.apilayer.com/currency_data/live';
 
     private http: HttpClient;
     private options: object;
@@ -22,16 +22,9 @@ export class ApiService {
         };
     }
 
-    //TODO add params for request
-    //TODO replace handling logic in special func
-    public getCurrenciesRate(): Observable<Currency[]> {
-        // let response = {
-        //     "quotes": {"EURRUB": 99.102629},
-        //     "source": "EUR",
-        //     "success": true,
-        //     "timestamp": 1715783343
-        // }
-        return this.http.get(this.baseUrl).pipe(
+    public getCurrenciesRate(source: string = "RUB", currencies: string = "USD,EUR,GBR"): Observable<Currency[]> {
+        const url = `${this.baseUrl}?source=${source}&currencies=${currencies}`;
+        return this.http.get(url, this.options).pipe(
             map((data: unknown) => {
                 if (data) {
                     const currenciesObject: object = Object.entries(data)[0];

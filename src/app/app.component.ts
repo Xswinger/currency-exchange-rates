@@ -5,7 +5,7 @@ import { ApiService } from './api/api.service';
 import { Currency } from './entities/currency';
 import { Messages } from './enums/messages';
 import { Currencies } from './enums/currencies';
-import { interval, tap } from 'rxjs';
+import { interval, mergeMap } from 'rxjs';
 import { NgFor, NgIf } from '@angular/common';
 
 @Component({
@@ -50,9 +50,7 @@ export class AppComponent implements OnInit {
       this.time = new Date();
     }, 1000);
 
-    interval(5000).pipe(
-      tap(() => this.getAndUpdateRates())
-    );
+    this.getAndUpdateRates();
   }
 
   public addCurrency(): void {
@@ -73,18 +71,20 @@ export class AppComponent implements OnInit {
   }
 
   public getAndUpdateRates(): void {
-    this.api.getCurrenciesRate().subscribe({
+    interval(5000).pipe(
+      mergeMap(() => this.api.getCurrenciesRate())
+    ).subscribe({
       next: (data: Currency[]) => {
         this.rates = data;
         this.loadStatus = false;
         console.log(data);
-      }, 
+      },
       error: (error: unknown) => {
         console.log(error);
         this.loadMessage = Messages.ERROR;
         this.rates = [];
       }
-    })
+    });
   }
 
   public getFormatDate(timestamp: Date = this.time, locale: string = "ru-RU"): string {
