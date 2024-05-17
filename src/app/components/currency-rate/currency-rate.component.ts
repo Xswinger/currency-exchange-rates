@@ -1,5 +1,6 @@
 import { NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { Currency } from '../../entities/currency';
 
 @Component({
   selector: 'app-currency-rate',
@@ -10,8 +11,7 @@ import { Component, Input } from '@angular/core';
 })
 export class CurrencyRateComponent {
 
-  @Input() currencyName: string = '';
-  @Input() currencyRate: number = 0;
+  @Input() currencyObject!: Currency | undefined;
   currencyDiff: number = 1.23
 
   public getFormatCurrency(value: number): string {

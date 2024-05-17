@@ -5,7 +5,7 @@ import { ApiService } from './api/api.service';
 import { Currency } from './entities/currency';
 import { Messages } from './enums/messages';
 import { Currencies } from './enums/currencies';
-import { interval, mergeMap } from 'rxjs';
+import { from, mergeMap } from 'rxjs';
 import { NgFor, NgIf } from '@angular/common';
 
 @Component({
@@ -16,29 +16,23 @@ import { NgFor, NgIf } from '@angular/common';
   styleUrl: './app.component.sass'
 })
 export class AppComponent implements OnInit {
+
   title = 'currency-exchange-rates';
 
-  private api: ApiService;
+  public api: ApiService;
+
   public time: Date;
 
-  public loadStatus: boolean = false;
+  public loadStatus: boolean = true;
   public loadMessage: string = Messages.LOAD;
 
-  private currentCurrencies: string[] = [
+  public showingCurrencies: string[] = [
     Currencies.USD,
     Currencies.EUR,
-    Currencies.GBR
+    Currencies.GBP
   ]
 
-  //TODO remove temp data
-  public rates: Currency[] = [
-    new Currency(Currencies.USD, 1.23),
-    new Currency(Currencies.EUR, 1.23),
-    new Currency(Currencies.GBR, 1.23),
-    new Currency(Currencies.CNY, 1.23),
-    new Currency(Currencies.JPY, 1.23),
-    new Currency(Currencies.TRY, 1.23)
-  ];
+  public rates: Map<string, Currency> = new Map([]);
 
   constructor(private apiService: ApiService) {
     this.api = apiService;
@@ -54,37 +48,43 @@ export class AppComponent implements OnInit {
   }
 
   public addCurrency(): void {
-    //! Temp cond
-    if (this.rates.length <= 6) {
-      this.rates.push(new Currency(Currencies.TRY, 1.23))
+    const len = this.showingCurrencies.length;
+    if (len <= 6) {
+      const ind = Object.keys(Currencies).indexOf(this.showingCurrencies[len-1]);
+      this.showingCurrencies.push(Object.keys(Currencies)[ind + 1]);
+      console.log(this.showingCurrencies)
     }
   }
 
   public removeCurrency(): void {
-    // if (this.currentCurrencies.length >= 3) {
-    //   this.currentCurrencies.pop();
-    // }
-    //! Temp cond
-    if (this.rates.length >= 3) {
-      this.rates.pop();
+    if (this.showingCurrencies.length >= 3) {
+      this.showingCurrencies.pop();
     }
   }
 
   public getAndUpdateRates(): void {
-    interval(5000).pipe(
-      mergeMap(() => this.api.getCurrenciesRate())
+    from(Object.values(Currencies)).pipe(
+      mergeMap(currency => {
+        return this.api.getCurrencyRate(currency);
+      })
+      //, repeat({ delay: 5000 })
     ).subscribe({
       next: (data: Currency[]) => {
-        this.rates = data;
+        data.forEach(item => {
+          this.rates.set(item.getName, item);
+        })
         this.loadStatus = false;
         console.log(data);
       },
       error: (error: unknown) => {
         console.log(error);
         this.loadMessage = Messages.ERROR;
-        this.rates = [];
       }
     });
+  }
+
+  public getCurrenciesArray(name: string): Currency | undefined {
+    return this.rates.get(name);
   }
 
   public getFormatDate(timestamp: Date = this.time, locale: string = "ru-RU"): string {

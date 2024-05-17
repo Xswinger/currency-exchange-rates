@@ -17,22 +17,22 @@ export class ApiService {
         this.options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',
-                'apikey': 'JJvc2NfVvkkRwx5jd9w2Qot1lHe6VOfZ',
+                'apikey': 'IphyvRcNtF7XHNFNCENN1mLDJCpcvL6f',
             })
         };
     }
 
-    public getCurrenciesRate(source: string = "RUB", currencies: string = "USD,EUR,GBR"): Observable<Currency[]> {
+    public getCurrencyRate(source: string, currencies: string = "RUB"): Observable<Currency[]> {
         const url = `${this.baseUrl}?source=${source}&currencies=${currencies}`;
         return this.http.get(url, this.options).pipe(
             map((data: unknown) => {
                 if (data) {
-                    const currenciesObject: object = Object.entries(data)[0];
-                    return Object.entries(currenciesObject).map((key, value): Currency => {
-                        return new Currency(String(key.slice(3)), value);
+                    const currenciesObject: object = new Map(Object.entries(data)).get('quotes');
+                    return Object.entries(currenciesObject).map((item): Currency => {
+                        return new Currency(String(item[0].slice(0, 3)), item[1]);
                     })
                 } else {
-                    throw Error("Quotes property not found");
+                    throw Error("Currency not found");
                 }
             }), catchError(error => {
                 console.log(error);
