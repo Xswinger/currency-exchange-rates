@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, catchError, map, retry } from "rxjs";
+import { Observable, catchError, map } from "rxjs";
 import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { Currency } from "../entities/currency";
 
