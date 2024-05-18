@@ -21,9 +21,10 @@
   <progress class="progress is-large is-info" max="100">60%</progress>
 </div>
 <ng-template #cont>
-  <div class="content">
-    <ng-template ngFor let-rate [ngForOf]="this.showingCurrencies">
-      <app-currency-rate [currencyObject]="getCurrenciesArray(rate)"></app-currency-rate>
-    </ng-template>
-  </div>
+    <ng-container #vc></ng-container>
+    <div class="content">
+      <ng-template #tpl ngFor let-rate [ngForOf]="this.showingCurrencies">
+        <app-currency-rate [currencyObject]="getCurrenciesArray(rate)"></app-currency-rate>
+      </ng-template>
+    </div>
 </ng-template>

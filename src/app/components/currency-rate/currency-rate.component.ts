@@ -17,8 +17,11 @@ export class CurrencyRateComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     const versions = changes["currencyObject"];
     const current  = versions.currentValue;
-    const previous = versions.previousValue;
-    this.currencyDiff = current.rate - previous.rate;
+    if (versions.previousValue) {
+      this.currencyDiff = current.getRate - versions.previousValue.getRate;
+    } else {
+      this.currencyDiff = 0;
+    }
   }
 
   public getFormatCurrency(value: number): string {
