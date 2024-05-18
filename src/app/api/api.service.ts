@@ -15,7 +15,7 @@ export class ApiService {
         this.options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',
-                'apikey': 'pYQnBwiNjj9D7idNoUjo4hmLLK0VO99h',
+                'apikey': 'pYQnBwiNjj9D7idNoUjo4hmLLK0VO99h'
             })
         };
     }
