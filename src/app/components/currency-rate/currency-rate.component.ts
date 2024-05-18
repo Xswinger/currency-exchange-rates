@@ -1,5 +1,5 @@
 import { NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Currency } from '../../entities/currency';
 
 @Component({
@@ -9,10 +9,20 @@ import { Currency } from '../../entities/currency';
   templateUrl: './currency-rate.component.html',
   styleUrl: './currency-rate.component.sass'
 })
-export class CurrencyRateComponent {
+export class CurrencyRateComponent implements OnChanges {
 
   @Input() currencyObject!: Currency | undefined;
-  currencyDiff: number = 1.23
+  currencyDiff: number = 0;
+
+  ngOnChanges(changes: SimpleChanges) {
+    const versions = changes["currencyObject"];
+    const current  = versions.currentValue;
+    if (versions.previousValue) {
+      this.currencyDiff = current.getRate - versions.previousValue.getRate;
+    } else {
+      this.currencyDiff = 0;
+    }
+  }
 
   public getFormatCurrency(value: number): string {
     return value.toFixed(2);

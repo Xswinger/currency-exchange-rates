@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, ViewContainerRef, ViewRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CurrencyRateComponent } from './components/currency-rate/currency-rate.component'; 
 import { ApiService } from './api/api.service';
 import { Currency } from './entities/currency';
 import { Messages } from './enums/messages';
 import { Currencies } from './enums/currencies';
-import { from, mergeMap } from 'rxjs';
+import { forkJoin, from, mergeMap, repeat } from 'rxjs';
 import { NgFor, NgIf } from '@angular/common';
 
 @Component({
@@ -16,6 +16,11 @@ import { NgFor, NgIf } from '@angular/common';
   styleUrl: './app.component.sass'
 })
 export class AppComponent implements OnInit {
+  @ViewChild('vc', {static: true, read: ViewContainerRef}) vc!: ViewContainerRef;
+
+  @ViewChild('tpl', {static: true, read: TemplateRef}) tpl!: TemplateRef<unknown>;
+
+  childViewRef!: ViewRef;
 
   title = 'currency-exchange-rates';
 
@@ -63,17 +68,22 @@ export class AppComponent implements OnInit {
   }
 
   public getAndUpdateRates(): void {
-    from(Object.values(Currencies)).pipe(
-      mergeMap(currency => {
-        return this.api.getCurrencyRate(currency);
+    const currenciesNames = Object.values(Currencies);
+
+    from(currenciesNames).pipe(
+      mergeMap(() => {
+        return forkJoin(
+          currenciesNames.map(currency => this.api.getCurrencyRate(currency))
+        );
       })
-      //, repeat({ delay: 5000 })
+      , repeat({ delay: 5000 })
     ).subscribe({
-      next: (data: Currency[]) => {
+      next: (data: Currency[][]) => {
         data.forEach(item => {
-          this.rates.set(item.getName, item);
+          this.rates.set(item[0].getName, item[0]);
         })
         this.loadStatus = false;
+        this.reloadChildView();
         console.log(data);
       },
       error: (error: unknown) => {
@@ -91,5 +101,23 @@ export class AppComponent implements OnInit {
     const time = timestamp.toLocaleTimeString(locale);
     const date = timestamp.toLocaleDateString(locale);
     return date + ", " + time;
+  }
+
+  insertChildView(){
+    if (this.vc) {
+      console.log(this.vc);
+      this.vc.insert(this.childViewRef);
+    }
+  }
+
+  removeChildView(){
+    if (this.vc) {
+      this.vc.detach();
+    }
+  }
+
+  reloadChildView(){
+    this.removeChildView();
+    this.insertChildView();
   }
 }
