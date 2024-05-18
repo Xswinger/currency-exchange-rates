@@ -40,7 +40,6 @@ export class AppComponent implements OnInit {
   public rates: Map<string, Currency> = new Map([]);
 
   constructor(private apiService: ApiService) {
-    this.api = apiService;
     this.time = new Date();
   }
 
@@ -80,7 +79,7 @@ export class AppComponent implements OnInit {
     ).subscribe({
       next: (data: Currency[][]) => {
         data.forEach(item => {
-          this.rates.set(item[0].getName, item[0]);
+          this.rates.set(item[0].name, item[0]);
         })
         this.loadStatus = false;
         this.reloadChildView();

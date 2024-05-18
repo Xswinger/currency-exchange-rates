@@ -1,28 +1,21 @@
 export class Currency {
 
-    private name: string;
+    constructor(private _name: string, private _rate: number) {}
 
-    private rate: number
-
-    constructor(private currencyName: string, private currencyRate: number) {
-        this.name = currencyName;
-        this.rate = currencyRate;
+    public get name(): string {
+        return this._name;
     }
 
-    public get getName(): string {
-        return this.name;
+    public get rate(): number {
+        return this._rate;
     }
 
-    public get getRate(): number {
-        return this.rate;
+    public set name(newName: string) {
+        this._name = newName;
     }
 
-    public set setName(newName: string) {
-        this.name = newName;
-    }
-
-    public set setRate(newRate: number) {
-        this.rate = newRate;
+    public set rate(newRate: number) {
+        this._rate = newRate;
     }
     
     
