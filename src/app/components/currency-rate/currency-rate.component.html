@@ -1,9 +1,9 @@
 <div class="box">
     <div>
-        <h5 class="title is-5">{{currencyObject?.getName || ""}}</h5>
+        <h5 class="title is-5">{{currencyObject?.name || ""}}</h5>
     </div>
     <div>
-        <span>{{getFormatCurrency(currencyObject?.getRate || 0)}}</span>
+        <span>{{getFormatCurrency(currencyObject?.rate || 0)}}</span>
         <span *ngIf="currencyDiff > 0" class="icon has-text-success">
             <i class="fas fa-caret-up"></i>
         </span>

@@ -4,26 +4,26 @@
     <h5 class="subtitle">{{ getFormatDate() }}</h5>
   </div>
   <div>
-    <button class="button" title="Добавить валюту" (click)="addCurrency()" [disabled]="this.showingCurrencies.length >= 6">
+    <button class="button" title="Добавить валюту" (click)="addCurrency()" [disabled]="this.showingCurrencies.length >= 6 || this.loadStatus">
       <span class="icon is-small">
         <i class="fas fa-plus"></i>
       </span>
     </button>
-    <button class="button" title="Убрать валюту" (click)="removeCurrency()" [disabled]="this.showingCurrencies.length <= 3">
+    <button class="button" title="Убрать валюту" (click)="removeCurrency()" [disabled]="this.showingCurrencies.length <= 3 || this.loadStatus">
       <span class="icon is-small">
         <i class="fas fa-minus"></i>
       </span>
     </button>
   </div>
 </div>
-<div *ngIf="loadStatus; else cont" class="progress-wrapper">
+<div *ngIf="loadStatus; else cursTemp" class="progress-wrapper">
   <h4 class="title is-4">{{loadMessage}}</h4>
-  <progress class="progress is-large is-info" max="100">60%</progress>
+  <progress class="progress is-large is-info" max="100"></progress>
 </div>
-<ng-template #cont>
-    <ng-container #vc></ng-container>
+<ng-template #cursTemp>
+    <ng-container #viewCont></ng-container>
     <div class="content">
-      <ng-template #tpl ngFor let-rate [ngForOf]="this.showingCurrencies">
+      <ng-template #viewTempl ngFor let-rate [ngForOf]="this.showingCurrencies">
         <app-currency-rate [currencyObject]="getCurrenciesArray(rate)"></app-currency-rate>
       </ng-template>
     </div>

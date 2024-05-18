@@ -5,7 +5,7 @@ import { ApiService } from './api/api.service';
 import { Currency } from './entities/currency';
 import { Messages } from './enums/messages';
 import { Currencies } from './enums/currencies';
-import { forkJoin, from, mergeMap, repeat } from 'rxjs';
+import { Subscription, forkJoin, repeat } from 'rxjs';
 import { NgFor, NgIf } from '@angular/common';
 
 @Component({
@@ -16,81 +16,107 @@ import { NgFor, NgIf } from '@angular/common';
   styleUrl: './app.component.sass'
 })
 export class AppComponent implements OnInit {
-  @ViewChild('vc', {static: true, read: ViewContainerRef}) vc!: ViewContainerRef;
 
-  @ViewChild('tpl', {static: true, read: TemplateRef}) tpl!: TemplateRef<unknown>;
+  /*
+  Объекты валют и список отображаемых пользователю
+  валют резделены на разные property. Из-за этого
+  для отображения только показываемых currency,
+  список которых находится в showingCurrencies,
+  используется ручное пересоздание компонентов  
+  после каждого изменения количества отображаемых
+  валют
+  */
+  @ViewChild('viewCont', {static: true, read: ViewContainerRef}) viewCont: ViewContainerRef;
 
-  childViewRef!: ViewRef;
+  @ViewChild('viewTempl', {static: true, read: TemplateRef}) templRef: TemplateRef<unknown>;
+
+  childViewRef: ViewRef;
 
   title = 'currency-exchange-rates';
 
-  public api: ApiService;
-
-  public time: Date;
+  public time: Date = new Date();
 
   public loadStatus: boolean = true;
   public loadMessage: string = Messages.LOAD;
 
-  public showingCurrencies: string[] = [
+  public readonly showingCurrencies: string[] = [
     Currencies.USD,
     Currencies.EUR,
     Currencies.GBP
-  ]
+  ];
+
+  private currenciesSubscription: Subscription;
 
   public rates: Map<string, Currency> = new Map([]);
 
-  constructor(private apiService: ApiService) {
-    this.api = apiService;
-    this.time = new Date();
-  }
+  constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     setInterval(() => {
       this.time = new Date();
     }, 1000);
 
-    this.getAndUpdateRates();
+    this.subscribeGettingAndUpdatingRates();
   }
 
   public addCurrency(): void {
-    const len = this.showingCurrencies.length;
-    if (len <= 6) {
-      const ind = Object.keys(Currencies).indexOf(this.showingCurrencies[len-1]);
-      this.showingCurrencies.push(Object.keys(Currencies)[ind + 1]);
-      console.log(this.showingCurrencies)
+    this.unsubscribeGettingCurrency();
+
+    const showingLen = this.showingCurrencies.length;
+    const currenciesKeys = Object.keys(Currencies);
+
+    if (showingLen <= currenciesKeys.length) {
+      const ind = currenciesKeys.indexOf(this.showingCurrencies[showingLen-1]);
+      this.showingCurrencies.push(currenciesKeys[ind + 1]);
     }
+
+    this.subscribeGettingAndUpdatingRates();
   }
 
   public removeCurrency(): void {
-    if (this.showingCurrencies.length >= 3) {
+    this.unsubscribeGettingCurrency();
+
+    if (this.showingCurrencies.length >= 1) {
       this.showingCurrencies.pop();
     }
+
+    this.subscribeGettingAndUpdatingRates();
   }
 
-  public getAndUpdateRates(): void {
-    const currenciesNames = Object.values(Currencies);
-
-    from(currenciesNames).pipe(
-      mergeMap(() => {
-        return forkJoin(
-          currenciesNames.map(currency => this.api.getCurrencyRate(currency))
-        );
-      })
-      , repeat({ delay: 5000 })
-    ).subscribe({
-      next: (data: Currency[][]) => {
-        data.forEach(item => {
-          this.rates.set(item[0].getName, item[0]);
-        })
-        this.loadStatus = false;
-        this.reloadChildView();
-        console.log(data);
-      },
-      error: (error: unknown) => {
-        console.log(error);
-        this.loadMessage = Messages.ERROR;
+  private subscribeGettingAndUpdatingRates(): void {
+    this.currenciesSubscription = forkJoin(this.showingCurrencies.map(
+      currency => this.api.getCurrencyRate(currency)
+    )).pipe(
+      repeat({delay: 5000})
+    ).subscribe(
+      {
+        next: (data: Currency[][]) => {
+          data.forEach(item => {
+            this.rates.set(item[0].name, item[0]);
+          })
+          this.loadStatus = false;
+          this.reloadChildView();
+          console.log(data);
+        },
+        error: (error: Error) => {
+          this.errorHandling(Number(error.message));
+          console.log(error);
+        }
       }
-    });
+    );
+  }
+
+  private errorHandling(code: number) {
+    if (Number(code) != 429) {
+      this.loadMessage = Messages.ERROR;
+    } else {
+      this.loadMessage = Messages.KEY_EXP;
+    }
+    this.loadStatus = true;
+  }
+
+  private unsubscribeGettingCurrency(): void {
+    this.currenciesSubscription.unsubscribe();
   }
 
   public getCurrenciesArray(name: string): Currency | undefined {
@@ -103,20 +129,20 @@ export class AppComponent implements OnInit {
     return date + ", " + time;
   }
 
-  insertChildView(){
-    if (this.vc) {
-      console.log(this.vc);
-      this.vc.insert(this.childViewRef);
+  private insertChildView(){
+    if (this.viewCont) {
+      console.log(this.viewCont);
+      this.viewCont.insert(this.childViewRef);
     }
   }
 
-  removeChildView(){
-    if (this.vc) {
-      this.vc.detach();
+  private removeChildView(){
+    if (this.viewCont) {
+      this.viewCont.detach();
     }
   }
 
-  reloadChildView(){
+  private reloadChildView(){
     this.removeChildView();
     this.insertChildView();
   }

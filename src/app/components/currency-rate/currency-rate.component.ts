@@ -18,7 +18,7 @@ export class CurrencyRateComponent implements OnChanges {
     const versions = changes["currencyObject"];
     const current  = versions.currentValue;
     if (versions.previousValue) {
-      this.currencyDiff = current.getRate - versions.previousValue.getRate;
+      this.currencyDiff = current.rate - versions.previousValue.rate;
     } else {
       this.currencyDiff = 0;
     }
